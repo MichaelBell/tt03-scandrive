@@ -37,3 +37,41 @@ class TT:
         self.tt.send_clocks_blocking(2125 - clocks - 24)
         return self.tt.send_byte_blocking(0)
 
+    # Note this does not work for design 0, 1 or 249.
+    def clock_byte(self, byte_in, design_num):
+        self.tt.send_byte_blocking(byte_in)
+        self.tt.send_byte_blocking(byte_in | 1)
+        clocks = int((design_num - 1) * 8.5)
+        if (design_num & 1) == 0: clocks += 1
+        self.tt.send_clocks_blocking(clocks - 8)
+        self.tt.send_byte_blocking(0, latch=True)
+        self.tt.send_byte_blocking(0, latch=True)
+        self.tt.send_byte_blocking(0, scan=True)
+        self.tt.send_clocks_blocking(2125 - clocks - 24)
+        return self.tt.send_byte_blocking(0)
+
+    # Note this does not work for design 0 or 1.
+    # Doesn't read the output
+    def clock_byte_in(self, byte_in, design_num):
+        self.tt.send_byte_blocking(byte_in)
+        self.tt.send_byte_blocking(byte_in | 1)
+        clocks = int((design_num - 1) * 8.5)
+        if (design_num & 1) == 0: clocks += 1
+        self.tt.send_clocks_blocking(clocks - 8)
+        self.tt.send_byte_blocking(0, latch=True)
+        self.tt.send_byte_blocking(0, latch=True)
+
+    # Note this does not work for design 0 or 1.
+    # Doesn't read the output
+    def clock_bytes_in(self, data, design_num):
+        for byte_in in data:
+            self.tt.send_byte_blocking(byte_in)
+            self.tt.send_byte_blocking(byte_in | 1)
+        clocks = int((design_num - 1) * 8.5)
+        if (design_num & 1) == 0: clocks += 1
+        clocks += 8 - 16 * len(data)
+        assert(clocks > 0)
+        self.tt.send_clocks_blocking(clocks)
+        for _ in data:
+            self.tt.send_byte_blocking(0, latch=True)
+            self.tt.send_byte_blocking(0, latch=True)
