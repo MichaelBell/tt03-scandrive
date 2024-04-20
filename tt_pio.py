@@ -1,4 +1,5 @@
 import rp2
+import machine
 from rp2 import PIO
 
 # PIO program to send a byte, optionally selecting scan first
@@ -55,8 +56,9 @@ def _tt03_pio_send_zeroes():
 class TT_PIO:
     # Note that latch_en must be pin_scan_select+1 and clock must be pin_scan_select+2
     def __init__(self, sm_idx, pin_data_out, pin_data_in, pin_scan_select):
+        machine.freq(200_000_000)
         self.sm = rp2.StateMachine(sm_idx, _tt03_pio_send_byte, freq=10_000_000, out_base=pin_data_out, in_base=pin_data_in, sideset_base=pin_scan_select)
-        self.sm_z = rp2.StateMachine(sm_idx+1, _tt03_pio_send_zeroes, freq=62_500_000, set_base=pin_data_out, sideset_base=pin_scan_select)
+        self.sm_z = rp2.StateMachine(sm_idx+1, _tt03_pio_send_zeroes, freq=200_000_000, set_base=pin_data_out, sideset_base=pin_scan_select)
         self.sm.active(1)
         self.sm_z.active(1)
 
